@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String?
+  degreeId Int?
+  degree   Degree? @relation(fields: [degreeId], references: [id])
+  progress UserSubjectProgress[]
+}
+
+model Degree {
+  id       Int       @id @default(autoincrement())
+  name     String
+  subjects Subject[]
+  users    User[]
+}
+
+model Subject {
+  id             Int       @id @default(autoincrement())
+  name           String
+  degreeId       Int
+  degree         Degree    @relation(fields: [degreeId], references: [id])
+  
+  // Prerequisites for this subject
+  prerequisites  Correlativity[] @relation("SubjectPrerequisites")
+  
+  // This subject is a prerequisite for others
+  requiredBy     Correlativity[] @relation("PrerequisiteFor")
+  
+  userProgress   UserSubjectProgress[]
+}
+
+model SubjectState {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique // "Pending", "In Progress", "Regularized", "Approved"
+  
+  progress       UserSubjectProgress[]
+  requiredFor    Correlativity[]
+}
+
+model UserSubjectProgress {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  user      User         @relation(fields: [userId], references: [id])
+  subjectId Int
+  subject   Subject      @relation(fields: [subjectId], references: [id])
+  stateId   Int
+  state     SubjectState @relation(fields: [stateId], references: [id])
+  
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, subjectId])
+}
+
+model Correlativity {
+  id                    Int          @id @default(autoincrement())
+  
+  subjectId             Int
+  subject               Subject      @relation("SubjectPrerequisites", fields: [subjectId], references: [id])
+  
+  prerequisiteSubjectId Int
+  prerequisiteSubject   Subject      @relation("PrerequisiteFor", fields: [prerequisiteSubjectId], references: [id])
+  
+  requiredStateId       Int
+  requiredState         SubjectState @relation(fields: [requiredStateId], references: [id])
+}
