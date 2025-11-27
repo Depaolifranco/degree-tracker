@@ -30,6 +30,7 @@ model Degree {
 model Subject {
   id       Int    @id @default(autoincrement())
   name     String
+  quarter  Int
   degreeId Int
   degree   Degree @relation(fields: [degreeId], references: [id])
 

@@ -26,10 +26,11 @@ async function main() {
     console.log(`Created Degree: ${degree.name}`)
 
     // 3. Create Subjects
-    // Year 1
+    // Quarter 1
     const algebra = await prisma.subject.create({
         data: {
             name: 'Álgebra y Geometría Analítica',
+            quarter: 1,
             degreeId: degree.id,
         },
     })
@@ -37,14 +38,12 @@ async function main() {
     const analisis1 = await prisma.subject.create({
         data: {
             name: 'Análisis Matemático I',
+            quarter: 1,
             degreeId: degree.id,
         },
     })
 
-    // Year 2 (Requires Year 1 subjects)
-    // Análisis II requires Análisis I (Regularizada to take, Aprobada to pass? Usually just Regularized to take)
-    // Let's say to take Análisis II you need Análisis I Regularized.
-
+    // Quarter 2 (Requires Quarter 1 subjects)
     const regularizadaState = await prisma.subjectState.findUnique({ where: { name: 'Regularizada' } })
     const aprobadaState = await prisma.subjectState.findUnique({ where: { name: 'Aprobada' } })
 
@@ -53,12 +52,13 @@ async function main() {
     const analisis2 = await prisma.subject.create({
         data: {
             name: 'Análisis Matemático II',
+            quarter: 2,
             degreeId: degree.id,
             prerequisites: {
                 create: [
                     {
                         prerequisiteSubjectId: analisis1.id,
-                        requiredStateId: regularizadaState.id, // Need Analisis 1 Regularized
+                        requiredStateId: regularizadaState.id,
                     }
                 ]
             }
