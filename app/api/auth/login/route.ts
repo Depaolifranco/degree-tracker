@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { signToken } from '@/lib/jwt'
+import { userService } from '@/services/user.service'
+
+const TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
 const loginSchema = z.object({
     email: z.email('Invalid email address'),
@@ -23,10 +24,7 @@ export async function POST(request: Request) {
 
         const { email, password } = result.data
 
-        // Find user
-        const user = await prisma.user.findUnique({
-            where: { email },
-        })
+        const user = await userService.findByEmail(email)
 
         if (!user) {
             return NextResponse.json(
@@ -35,8 +33,7 @@ export async function POST(request: Request) {
             )
         }
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.password)
+        const isValidPassword = await userService.verifyPassword(password, user.password)
 
         if (!isValidPassword) {
             return NextResponse.json(
@@ -45,8 +42,7 @@ export async function POST(request: Request) {
             )
         }
 
-        const { password: _, ...userWithoutPassword } = user
-
+        const userWithoutPassword = userService.removePassword(user)
         const token = await signToken({ userId: user.id, email: user.email })
 
         const response = NextResponse.json(
@@ -58,7 +54,7 @@ export async function POST(request: Request) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
+            maxAge: TOKEN_EXPIRATION_TIME_IN_SECONDS,
         })
 
         return response

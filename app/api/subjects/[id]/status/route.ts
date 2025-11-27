@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { prisma } from '@/lib/prisma'
-import { verifyToken } from '@/lib/jwt'
 import { z } from 'zod'
+import { authenticateRequest } from '@/lib/auth'
+import { subjectService } from '@/services/subject.service'
 
 const updateStatusSchema = z.object({
     stateId: z.number().int(),
@@ -13,15 +12,9 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get('token')?.value
-        if (!token) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-        }
-
-        const payload = await verifyToken(token)
-        if (!payload) {
-            return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        const auth = await authenticateRequest()
+        if ('error' in auth) {
+            return auth.error
         }
 
         const { id } = await params
@@ -37,33 +30,11 @@ export async function PUT(
         }
 
         const { stateId } = result.data
-        const userId = payload.userId
-        const existingProgress = await prisma.userSubjectProgress.findUnique({
-            where: {
-                userId_subjectId: {
-                    userId,
-                    subjectId,
-                },
-            },
-        })
-
-        let progress
-        if (existingProgress) {
-            progress = await prisma.userSubjectProgress.update({
-                where: { id: existingProgress.id },
-                data: { stateId },
-                include: { state: true },
-            })
-        } else {
-            progress = await prisma.userSubjectProgress.create({
-                data: {
-                    userId,
-                    subjectId,
-                    stateId,
-                },
-                include: { state: true },
-            })
-        }
+        const progress = await subjectService.updateUserSubjectStatus(
+            auth.userId,
+            subjectId,
+            stateId
+        )
 
         return NextResponse.json({ message: 'Status updated', progress })
     } catch (error) {
@@ -71,4 +42,3 @@ export async function PUT(
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
-

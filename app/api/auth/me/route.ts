@@ -1,30 +1,16 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifyToken } from '@/lib/jwt'
-import { prisma } from '@/lib/prisma'
+import { authenticateRequest } from '@/lib/auth'
+import { userService } from '@/services/user.service'
 
 export async function GET() {
     try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get('token')?.value
-        if (!token) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+        const auth = await authenticateRequest()
+
+        if ('error' in auth) {
+            return auth.error
         }
 
-        const payload = await verifyToken(token)
-        if (!payload) {
-            return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: payload.userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                degreeId: true,
-            },
-        })
+        const user = await userService.findById(auth.userId)
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })

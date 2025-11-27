@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { signToken } from '@/lib/jwt'
+import { userService } from '@/services/user.service'
+
+const TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
 const registerSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.email('Invalid email address'),
+    email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     degreeId: z.number().int('Degree is required'),
@@ -14,8 +15,6 @@ const registerSchema = z.object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
 })
-
-const TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
 export async function POST(request: Request) {
     try {
@@ -31,9 +30,8 @@ export async function POST(request: Request) {
 
         const { name, email, password, degreeId } = result.data
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email },
-        })
+        const existingUser = await userService.findByEmail(email)
+
         if (existingUser) {
             return NextResponse.json(
                 { error: 'User with this email already exists' },
@@ -41,26 +39,14 @@ export async function POST(request: Request) {
             )
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10)
-
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                degreeId,
-            },
-        })
-
-        const { password: _, ...userWithoutPassword } = user
-
+        const user = await userService.create({ name, email, password, degreeId })
+        const token = await signToken({ userId: user.id, email: user.email })
 
         const response = NextResponse.json(
-            { message: 'User registered successfully', user: userWithoutPassword },
+            { message: 'User registered successfully', user },
             { status: 201 }
         )
 
-        const token = await signToken({ userId: user.id, email: user.email })
         response.cookies.set('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
