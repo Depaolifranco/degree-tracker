@@ -40,10 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/app/generated/prisma
-
 # local env files
 settings.json
+
+# prisma
+/app/generated/prisma
+/prisma/migrations
 
 # sqlite
 *.db

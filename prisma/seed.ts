@@ -31,6 +31,27 @@ async function main() {
     console.log(`Created Degree: ${degree.name}`)
 
     // 3. Create Subjects by Quarter
+    // Quarter 1
+    const quimicaCBC = await prisma.subject.create({
+        data: { name: 'Química(CBC)', quarter: 1, degreeId: degree.id },
+    })
+    const sociedadEstadoCBC = await prisma.subject.create({
+        data: { name: 'Sociedad y Estado(CBC)', quarter: 1, degreeId: degree.id },
+    })
+    const pensamientoCientificoCBC = await prisma.subject.create({
+        data: { name: 'Pensamiento Científico(CBC)', quarter: 1, degreeId: degree.id },
+    })
+
+    // Quarter 2
+    const matematicaCBC = await prisma.subject.create({
+        data: { name: 'Matemática(CBC)', quarter: 2, degreeId: degree.id },
+    })
+    const biofisicaCBC = await prisma.subject.create({
+        data: { name: 'Biofísica(CBC)', quarter: 2, degreeId: degree.id },
+    })
+    const biologiaCelularCBC = await prisma.subject.create({
+        data: { name: 'Biología Celular(CBC)', quarter: 2, degreeId: degree.id },
+    })
 
     // Quarter 3
     const quimicaGeneral = await prisma.subject.create({

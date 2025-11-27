@@ -73,7 +73,7 @@ export default function DashboardPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Loading...</div>
+                <div className="text-white text-xl">Cargando...</div>
             </div>
         )
     }
@@ -82,14 +82,14 @@ export default function DashboardPage() {
         <div className="min-h-screen bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-extrabold text-white">Degree Tracker</h1>
-                    <p className="mt-2 text-gray-400">Track your academic progress</p>
+                    <h1 className="text-4xl font-extrabold text-white">Seguidor de carrera</h1>
+                    <p className="mt-2 text-gray-400">Seguí tu progreso</p>
                 </div>
 
                 {Object.keys(groupedSubjects).sort((a, b) => parseInt(a) - parseInt(b)).map((quarter) => (
                     <div key={quarter} className="mb-8">
                         <h2 className="text-2xl font-bold text-white mb-4">
-                            Quarter {quarter}
+                            Cuatrimestre {quarter}
                         </h2>
                         <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-700">
                             <div className="overflow-x-auto">
@@ -97,10 +97,10 @@ export default function DashboardPage() {
                                     <thead className="bg-gray-700">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                                Subject
+                                                Materia
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                                Status
+                                                Estado
                                             </th>
                                         </tr>
                                     </thead>
