@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { verifyToken } from '@/lib/jwt'
 import { z } from 'zod'
 
 const updateStatusSchema = z.object({
-    userId: z.number().int(),
     stateId: z.number().int(),
 })
 
@@ -12,6 +13,17 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get('token')?.value
+        if (!token) {
+            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+        }
+
+        const payload = await verifyToken(token)
+        if (!payload) {
+            return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        }
+
         const { id } = await params
         const subjectId = parseInt(id)
         const body = await request.json()
@@ -24,7 +36,8 @@ export async function PUT(
             )
         }
 
-        const { userId, stateId } = result.data
+        const { stateId } = result.data
+        const userId = payload.userId
         const existingProgress = await prisma.userSubjectProgress.findUnique({
             where: {
                 userId_subjectId: {
@@ -58,3 +71,4 @@ export async function PUT(
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
+

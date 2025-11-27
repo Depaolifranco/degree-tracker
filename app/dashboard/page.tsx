@@ -20,41 +20,34 @@ export default function DashboardPage() {
     const [subjects, setSubjects] = useState<Subject[]>([])
     const [states, setStates] = useState<SubjectState[]>([])
     const [loading, setLoading] = useState(true)
-    const [userId, setUserId] = useState<number | null>(null)
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user')
-        if (!storedUser) {
-            router.push('/login')
-            return
-        }
-
-        const user = JSON.parse(storedUser)
-        setUserId(user.id)
-
         Promise.all([
-            fetch(`/api/subjects?userId=${user.id}`).then(res => res.json()),
+            fetch('/api/auth/me').then(res => res.json()),
+            fetch('/api/subjects').then(res => res.json()),
             fetch('/api/states').then(res => res.json()),
         ])
-            .then(([subjectsData, statesData]) => {
+            .then(([userData, subjectsData, statesData]) => {
+                if (userData.error) {
+                    router.push('/login')
+                    return
+                }
                 setSubjects(subjectsData)
                 setStates(statesData)
                 setLoading(false)
             })
             .catch((error) => {
                 console.error('Error loading data:', error)
-                setLoading(false)
+                router.push('/login')
             })
     }, [router])
 
     const handleStatusChange = async (subjectId: number, stateId: number) => {
-        if (!userId) return
-
         try {
             const res = await fetch(`/api/subjects/${subjectId}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, stateId }),
+                body: JSON.stringify({ stateId }),
             })
 
             if (!res.ok) throw new Error('Failed to update status')

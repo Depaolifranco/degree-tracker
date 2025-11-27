@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { signToken } from '@/lib/jwt'
 
 const loginSchema = z.object({
     email: z.email('Invalid email address'),
@@ -46,10 +47,21 @@ export async function POST(request: Request) {
 
         const { password: _, ...userWithoutPassword } = user
 
-        return NextResponse.json(
+        const token = await signToken({ userId: user.id, email: user.email })
+
+        const response = NextResponse.json(
             { message: 'Login successful', user: userWithoutPassword },
             { status: 200 }
         )
+
+        response.cookies.set('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+        })
+
+        return response
     } catch (error) {
         console.error('Login error:', error)
         return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { signToken } from '@/lib/jwt'
 
 const registerSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -13,6 +14,8 @@ const registerSchema = z.object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
 })
+
+const TOKEN_EXPIRATION_TIME_IN_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
 export async function POST(request: Request) {
     try {
@@ -51,10 +54,21 @@ export async function POST(request: Request) {
 
         const { password: _, ...userWithoutPassword } = user
 
-        return NextResponse.json(
+
+        const response = NextResponse.json(
             { message: 'User registered successfully', user: userWithoutPassword },
             { status: 201 }
         )
+
+        const token = await signToken({ userId: user.id, email: user.email })
+        response.cookies.set('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: TOKEN_EXPIRATION_TIME_IN_SECONDS,
+        })
+
+        return response
     } catch (error) {
         console.error('Registration error:', error)
         return NextResponse.json(
