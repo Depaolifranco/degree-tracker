@@ -55,21 +55,87 @@ async function main() {
 
     // Quarter 3
     const quimicaGeneral = await prisma.subject.create({
-        data: { name: 'Química General e Inorgánica', quarter: 3, degreeId: degree.id },
+        data: {
+            name: 'Química General e Inorgánica',
+            quarter: 3,
+            degreeId: degree.id,
+            prerequisites: {
+                create: [
+                    // CBC Q1 (CURSAR)
+                    { prerequisiteSubjectId: quimicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: sociedadEstadoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: pensamientoCientificoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    // CBC Q2 (CURSAR)
+                    { prerequisiteSubjectId: matematicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biofisicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biologiaCelularCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                ]
+            }
+        },
     })
     const matematica = await prisma.subject.create({
-        data: { name: 'Matemática', quarter: 3, degreeId: degree.id },
+        data: {
+            name: 'Matemática',
+            quarter: 3,
+            degreeId: degree.id,
+            prerequisites: {
+                create: [
+                    // CBC Q1 (CURSAR)
+                    { prerequisiteSubjectId: quimicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: sociedadEstadoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: pensamientoCientificoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    // CBC Q2 (CURSAR)
+                    { prerequisiteSubjectId: matematicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biofisicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biologiaCelularCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                ]
+            }
+        },
     })
     const anatomia = await prisma.subject.create({
-        data: { name: 'Anatomía e Histología', quarter: 3, degreeId: degree.id },
+        data: {
+            name: 'Anatomía e Histología',
+            quarter: 3,
+            degreeId: degree.id,
+            prerequisites: {
+                create: [
+                    // CBC Q1 (CURSAR)
+                    { prerequisiteSubjectId: quimicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: sociedadEstadoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: pensamientoCientificoCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    // CBC Q2 (CURSAR)
+                    { prerequisiteSubjectId: matematicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biofisicaCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biologiaCelularCBC.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                ]
+            }
+        },
     })
 
     // Quarter 4
     const fisica = await prisma.subject.create({
-        data: { name: 'Física', quarter: 4, degreeId: degree.id },
+        data: {
+            name: 'Física',
+            quarter: 4,
+            degreeId: degree.id,
+            prerequisites: {
+                create: [
+                    { prerequisiteSubjectId: matematica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' }
+                ]
+            }
+        },
     })
     const biologiaCelular = await prisma.subject.create({
-        data: { name: 'Biología Celular y Molecular', quarter: 4, degreeId: degree.id },
+        data: {
+            name: 'Biología Celular y Molecular',
+            quarter: 4,
+            degreeId: degree.id,
+            prerequisites: {
+                create: [
+                    { prerequisiteSubjectId: anatomia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' }
+                ]
+            }
+        },
     })
     const quimicaOrganica1 = await prisma.subject.create({
         data: {
@@ -78,7 +144,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -92,8 +159,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaOrganica1.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaOrganica1.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: fisica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaOrganica1.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaOrganica1.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -105,8 +173,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: biologiaCelular.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: biologiaCelular.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: anatomia.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biologiaCelular.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: biologiaCelular.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -118,8 +187,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: matematica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: matematica.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -133,8 +203,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaOrganica2.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaOrganica2.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: quimicaGeneral.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: fisica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: fisica.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -146,8 +217,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaAnalitica.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaAnalitica.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: fisica.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaAnalitica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaAnalitica.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -159,8 +231,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: fisiologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaOrganica2.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: biologiaCelular.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaOrganica2.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaOrganica2.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -174,7 +247,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: fisiologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: fisiologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: fisiologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -186,7 +260,7 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' }
                 ]
             }
         },
@@ -198,8 +272,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -211,7 +285,7 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: quimicaBiologica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' }
                 ]
             }
         },
@@ -225,8 +299,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -238,8 +313,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -251,8 +327,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -264,8 +340,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -279,8 +355,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: inmunologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: inmunologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: inmunologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: inmunologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -292,8 +368,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: fisiopatologia.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -307,8 +384,9 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: farmacologia.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaAnaliticaInstrumental.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: farmacologia.id, requiredStateId: aprobadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaAnaliticaInstrumental.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaAnaliticaInstrumental.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -320,7 +398,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: microbiologia.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -332,8 +411,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: quimicaBiologicaSuperior.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -345,7 +424,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: geneticaMolecular.id, requiredStateId: regularizadaState.id }
+                    { prerequisiteSubjectId: geneticaMolecular.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: geneticaMolecular.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },
@@ -357,8 +437,8 @@ async function main() {
             degreeId: degree.id,
             prerequisites: {
                 create: [
-                    { prerequisiteSubjectId: bioquimicaClinica.id, requiredStateId: regularizadaState.id },
-                    { prerequisiteSubjectId: bioquimicaClinica.id, requiredStateId: aprobadaState.id }
+                    { prerequisiteSubjectId: bioquimicaClinica.id, requiredStateId: regularizadaState.id, type: 'CURSAR' },
+                    { prerequisiteSubjectId: bioquimicaClinica.id, requiredStateId: aprobadaState.id, type: 'RENDIR' }
                 ]
             }
         },

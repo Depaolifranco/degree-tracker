@@ -76,4 +76,6 @@ model Correlativity {
 
   requiredStateId Int
   requiredState   SubjectState @relation(fields: [requiredStateId], references: [id])
+
+  type String // "CURSAR" or "RENDIR"
 }

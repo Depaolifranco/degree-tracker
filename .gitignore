@@ -45,7 +45,6 @@ settings.json
 
 # prisma
 /app/generated/prisma
-/prisma/migrations
 
 # sqlite
 *.db

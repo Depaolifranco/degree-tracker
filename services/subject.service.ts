@@ -40,7 +40,8 @@ export const subjectService = {
             prerequisites: subject.prerequisites.map(p => ({
                 id: p.prerequisiteSubjectId,
                 name: p.prerequisiteSubject.name,
-                requiredState: p.requiredState.name
+                requiredState: p.requiredState.name,
+                type: p.type
             }))
         }))
     },

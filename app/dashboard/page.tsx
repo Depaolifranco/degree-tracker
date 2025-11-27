@@ -12,6 +12,7 @@ interface Prerequisite {
     id: number
     name: string
     requiredState: string
+    type: string // "CURSAR" | "RENDIR"
 }
 
 interface Subject {
@@ -69,10 +70,11 @@ export default function DashboardPage() {
         }
     }
 
-    const isSubjectEnabled = (subject: Subject, allSubjects: Subject[]) => {
-        if (subject.prerequisites.length === 0) return true;
+    const checkPrerequisites = (subject: Subject, allSubjects: Subject[], type: string) => {
+        const prereqs = subject.prerequisites.filter(p => p.type === type);
+        if (prereqs.length === 0) return true;
 
-        return subject.prerequisites.every(prereq => {
+        return prereqs.every(prereq => {
             const prereqSubject = allSubjects.find(s => s.id === prereq.id);
             if (!prereqSubject) return false;
 
@@ -86,8 +88,18 @@ export default function DashboardPage() {
         });
     }
 
+    const isSubjectEnabled = (subject: Subject, allSubjects: Subject[]) => {
+        // Enabled for "Cursada" if all "CURSAR" prerequisites are met
+        return checkPrerequisites(subject, allSubjects, 'CURSAR');
+    }
+
+    const canApproveSubject = (subject: Subject, allSubjects: Subject[]) => {
+        // Can be "Aprobada" if all "RENDIR" prerequisites are met (and implicitly CURSAR ones too, usually)
+        return checkPrerequisites(subject, allSubjects, 'RENDIR') && checkPrerequisites(subject, allSubjects, 'CURSAR');
+    }
+
     const getSubjectStyle = (subject: Subject, isEnabled: boolean) => {
-        if (!isEnabled) return 'bg-gray-900/50 opacity-60 border-red-900/30';
+        if (!isEnabled) return 'bg-red-900/20 opacity-75 border-red-900/30';
 
         switch (subject.status.name) {
             case 'Pendiente': return 'bg-gray-800 hover:bg-gray-750 border-gray-700';
@@ -130,6 +142,7 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {groupedSubjects[parseInt(quarter)].map((subject) => {
                                 const isEnabled = isSubjectEnabled(subject, subjects);
+                                const canApprove = canApproveSubject(subject, subjects);
                                 const rowStyle = getSubjectStyle(subject, isEnabled);
                                 const hasPrerequisites = subject.prerequisites.length > 0;
 
@@ -162,26 +175,61 @@ export default function DashboardPage() {
                                                     </div>
 
                                                     {/* Tooltip */}
-                                                    <div className="absolute left-0 bottom-full mb-2 w-64 p-3 bg-gray-900/95 backdrop-blur-sm border border-gray-600 rounded-lg shadow-2xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
+                                                    <div className="absolute left-0 bottom-full mb-2 w-72 p-3 bg-gray-900/95 backdrop-blur-sm border border-gray-600 rounded-lg shadow-2xl z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
                                                         <h4 className="text-xs font-bold text-gray-400 uppercase mb-2 border-b border-gray-700 pb-1">Requisitos</h4>
-                                                        <ul className="space-y-1.5">
-                                                            {subject.prerequisites.map(prereq => {
-                                                                const prereqSubject = subjects.find(s => s.id === prereq.id);
-                                                                const isMet = prereqSubject && (
-                                                                    (prereq.requiredState === 'Regularizada' && (prereqSubject.status.name === 'Regularizada' || prereqSubject.status.name === 'Aprobada')) ||
-                                                                    (prereq.requiredState === 'Aprobada' && prereqSubject.status.name === 'Aprobada')
-                                                                );
 
-                                                                return (
-                                                                    <li key={prereq.id} className="flex items-center justify-between text-xs">
-                                                                        <span className="text-gray-300">{prereq.name}</span>
-                                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${isMet ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
-                                                                            {prereq.requiredState.substring(0, 3).toUpperCase()}
-                                                                        </span>
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
+                                                        <div className="space-y-3">
+                                                            {/* Para Cursar */}
+                                                            {subject.prerequisites.some(p => p.type === 'CURSAR') && (
+                                                                <div>
+                                                                    <h5 className="text-[10px] font-bold text-blue-400 uppercase mb-1.5">Para Cursar</h5>
+                                                                    <ul className="space-y-1.5">
+                                                                        {subject.prerequisites.filter(p => p.type === 'CURSAR').map(prereq => {
+                                                                            const prereqSubject = subjects.find(s => s.id === prereq.id);
+                                                                            const isMet = prereqSubject && (
+                                                                                (prereq.requiredState === 'Regularizada' && (prereqSubject.status.name === 'Regularizada' || prereqSubject.status.name === 'Aprobada')) ||
+                                                                                (prereq.requiredState === 'Aprobada' && prereqSubject.status.name === 'Aprobada')
+                                                                            );
+
+                                                                            return (
+                                                                                <li key={prereq.id} className="flex items-center justify-between text-xs pl-2 border-l-2 border-gray-700">
+                                                                                    <span className="text-gray-300">{prereq.name}</span>
+                                                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${isMet ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                                                                                        {prereq.requiredState.substring(0, 3).toUpperCase()}
+                                                                                    </span>
+                                                                                </li>
+                                                                            );
+                                                                        })}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Para Rendir Final */}
+                                                            {subject.prerequisites.some(p => p.type === 'RENDIR') && (
+                                                                <div>
+                                                                    <h5 className="text-[10px] font-bold text-indigo-400 uppercase mb-1.5">Para Rendir Final</h5>
+                                                                    <ul className="space-y-1.5">
+                                                                        {subject.prerequisites.filter(p => p.type === 'RENDIR').map(prereq => {
+                                                                            const prereqSubject = subjects.find(s => s.id === prereq.id);
+                                                                            const isMet = prereqSubject && (
+                                                                                (prereq.requiredState === 'Regularizada' && (prereqSubject.status.name === 'Regularizada' || prereqSubject.status.name === 'Aprobada')) ||
+                                                                                (prereq.requiredState === 'Aprobada' && prereqSubject.status.name === 'Aprobada')
+                                                                            );
+
+                                                                            return (
+                                                                                <li key={prereq.id} className="flex items-center justify-between text-xs pl-2 border-l-2 border-gray-700">
+                                                                                    <span className="text-gray-300">{prereq.name}</span>
+                                                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${isMet ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                                                                                        {prereq.requiredState.substring(0, 3).toUpperCase()}
+                                                                                    </span>
+                                                                                </li>
+                                                                            );
+                                                                        })}
+                                                                    </ul>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
                                                         {/* Arrow */}
                                                         <div className="absolute bottom-0 left-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900 border-r border-b border-gray-600"></div>
                                                     </div>
@@ -200,11 +248,19 @@ export default function DashboardPage() {
                                                         : 'bg-gray-700/50 border border-gray-600 text-white hover:bg-gray-700 focus:ring-indigo-500'
                                                     }`}
                                             >
-                                                {states.map((state) => (
-                                                    <option key={state.id} value={state.id} className="bg-gray-800">
-                                                        {state.name}
-                                                    </option>
-                                                ))}
+                                                {states.map((state) => {
+                                                    const isOptionDisabled = state.name === 'Aprobada' && !canApprove;
+                                                    return (
+                                                        <option
+                                                            key={state.id}
+                                                            value={state.id}
+                                                            className="bg-gray-800"
+                                                            disabled={isOptionDisabled}
+                                                        >
+                                                            {state.name} {isOptionDisabled ? '(Faltan correlativas de final)' : ''}
+                                                        </option>
+                                                    );
+                                                })}
                                             </select>
                                         </div>
                                     </div>
