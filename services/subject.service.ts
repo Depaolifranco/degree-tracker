@@ -18,6 +18,12 @@ export const subjectService = {
                     where: { userId },
                     include: { state: true },
                 },
+                prerequisites: {
+                    include: {
+                        prerequisiteSubject: true,
+                        requiredState: true
+                    }
+                }
             },
             orderBy: { quarter: 'asc' },
         })
@@ -31,6 +37,11 @@ export const subjectService = {
             name: subject.name,
             quarter: subject.quarter,
             status: subject.userProgress[0]?.state || pendingState,
+            prerequisites: subject.prerequisites.map(p => ({
+                id: p.prerequisiteSubjectId,
+                name: p.prerequisiteSubject.name,
+                requiredState: p.requiredState.name
+            }))
         }))
     },
 
